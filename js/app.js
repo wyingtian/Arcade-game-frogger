@@ -92,7 +92,7 @@ Player.prototype.checkCollision = function(target) {
     if (Math.abs(this.x - target.x) < this.collisionWidth && Math.abs(this.y - target.y) < this.collisionHeight) {
         this.reset();
         allEnemies=[];
-        spawn(6,200);
+        spawn(20,500);
     }
 };
 
@@ -179,7 +179,7 @@ function spawn(EnemyNum,speed){
 
 // call spawn 
 // TO DO add difficult leveal function based on this later
-spawn(6,200);
+spawn(20,500);
 
 var player = new Player();
 // This listens for key presses and sends the keys to your
