@@ -1,28 +1,22 @@
-var constants = {
-    // Initla player X position
 
+// set up constatns variables
+var constants = {
+    //initial player position
     PLAYER_INI_X : 202,
-    PLAYER_INI_Y : 83*5-10,
+    PLAYER_INI_Y : 405,
+    // the distance for one control key(up, down, lef,right)
     MOVE_X : 101,
     MOVE_Y : 83,
+    //bound parameters, make sure user does not go out off limit
     UPPER_BOUND :10,
-    LOWER_BOUND : 83*5-10,
+    LOWER_BOUND : 405,
     RIGHT_BOUND : 404,
     LEFT_BOUND : 0,
-    ENEMY_ROW_Y1: 63,
-    ENEMY_ROW_Y2: 146,
-    ENEMY_ROW_Y3: 229,
-    ENEMY_ROW_Y4: 312,
-    EASY_SPEED: 100,
-    MED_SPEED: 200,
-    HARD_SPEED:300,
+    // Y axis array for four rows of enemies
+    ROW_Y : [63, 146 , 229 , 312],
+    //width of Canvas created by engine.js
     CANVAS_WIDTH:505
 };
-
-var ROW_Y = [63, 146 , 229 , 312];
-//canvas = document.getElementsByTagName('canvas');
-// console.log(canvas.width);
-// Enemies our player must avoid
 
 var Enemy = function(posX,posY,speed) {
     // Variables applied to each of our instances go here,
@@ -39,13 +33,10 @@ var Enemy = function(posX,posY,speed) {
 
 // Update the enemy's position, required method for game
 // Parameter: dt, a time delta between ticks
-Enemy.prototype.update = function(dt) {
-    // You should multiply any movement by the dt parameter
-    // which will ensure the game runs at the same speed for
-    // all computers.
-    
+Enemy.prototype.update = function(dt) {    
     this.x = this.x + this.speed * dt;
-  
+    // if goes off right side of the canvas, set a random start point
+    // on the left side
     if(this.x > constants.CANVAS_WIDTH) {
         this.x = RandomStartPosX(-1000, 0);
     }
@@ -62,23 +53,15 @@ Enemy.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 
+// Reset Enemies Clear all enemies from the canvas
 
-
-/* Reset Enemies
- * Clear all enemies from the canvas
- */
 Enemy.prototype.reset =function(){
-       // var enemyCount = allEnemies.length;
-       // for(var i = 0; i < enemyCount; i++) {
-       //  allEnemies=[];
-       // }
-       allEnemies=[];
+        //make enemies array empty to reset enemy
+        allEnemies=[];
 };
 
 
-// Now write your own player class
-// This class requires an update(), render() and
-// a handleInput() method.
+// player class 
 var Player = function() {
     //X, Y co-rdinates of the player
     this.x = constants.PLAYER_INI_X;
@@ -88,14 +71,18 @@ var Player = function() {
     this.collisionHeight = 30;
 };
 
+// check collision method for one target
 Player.prototype.checkCollision = function(target) {
     if (Math.abs(this.x - target.x) < this.collisionWidth && Math.abs(this.y - target.y) < this.collisionHeight) {
         this.reset();
+        //delete all current enemies
         allEnemies=[];
+        //create enemies for new game
         spawn(20,500);
     }
 };
 
+// check collision method for a target array, calls checkCollision(target) method
 Player.prototype.checkCollisionArray = function(targets){
      if (targets.constructor === Array) {
         var target;
@@ -116,14 +103,14 @@ Player.prototype.render = function() {
 
 //Update player movements, track score and collisions
 Player.prototype.update = function() {
-    if(this.y < constants.ENEMY_ROW_Y1){
+    if(this.y < constants.ROW_Y[0]){
         Enemy.prototype.reset();
         this.reset();
     }
     this.checkCollisionArray(allEnemies);
 };
 
-
+//reset player position to initla position
 Player.prototype.reset = function(){
     this.x = constants.PLAYER_INI_X;
     this.y = constants.PLAYER_INI_Y;
@@ -154,33 +141,64 @@ Player.prototype.handleInput = function(key){
 };
 
 
-// Now instantiate your objects.
+// Gem class
+var Gem = function(posX,posY){
+    this.X = posX;
+    this.Y = posY;
+    this.gem = ['images/Gem-Blue.png','images/Gem-Green','images/Gem-Orange'];
+    this.collisionWidth = 30;
+    this.collisionHeight = 30;
+};
+
+//Draw the Gem on the canvas.
+Player.prototype.render = function() {
+   ctx.drawImage(Resources.get(this.gem[]),this.x,this.y);
+};
+
+//Update player movements, track score and collisions
+Player.prototype.update = function() {
+    if(this.y < constants.ROW_Y[0]){
+        Enemy.prototype.reset();
+        this.reset();
+    }
+    this.checkCollisionArray(allEnemies);
+};
+
+//reset player position to initla position
+Player.prototype.reset = function(){
+    this.x = constants.PLAYER_INI_X;
+    this.y = constants.PLAYER_INI_Y;
+};
+// create a new Gems object
+var gems = new Gems();
+
 // Place all enemy objects in an array called allEnemies
-// Place the player object in a variable called player
 var allEnemies = [];
 
-// spawn enemies, EnemyNum and speed as input,
-// if input EnemyNum is less than 4, it will be treated as 4
+
+// spawn enemies, enemyNum and speed as input,
+// if input enemyNum is less than 4, it will be treated as 4
 // to make sure each row has at least one enemy
-function spawn(EnemyNum,speed){
+function spawn(enemyNum,speed){
     // each row has at least one enemy
-    for(var i = 0 ; i < ROW_Y.length ; i++){
+    for(var i = 0 ; i < constants.ROW_Y.length ; i++){
         var randomPos1 = RandomStartPosX(-500,constants.CANVAS_WIDTH);
-        allEnemies.push(new Enemy(randomPos1, ROW_Y[i], speed));
+        allEnemies.push(new Enemy(randomPos1, constants.ROW_Y[i], speed));
     }
     // for the rest of the Enemy, randomly appear at onw row.
     //  generate the rest of the enemies randomly at certain row
-    var rest = EnemyNum - 4 ;
+    var rest = enemyNum - 4 ;
     for(var j = 0; j < rest ; j++){
         var randomPos2 = Enemy(RandomStartPosX(-1000,constants.CANVAS_WIDTH));
-        allEnemies.push(new Enemy(randomPos2,ROW_Y[Math.floor(Math.random()*ROW_Y.length)],speed));
+        // randomly chose a row for enemy
+        allEnemies.push(new Enemy(randomPos2,constants.ROW_Y[Math.floor(Math.random()*constants.ROW_Y.length)],speed));
     }
 };
 
 // call spawn 
-// TO DO add difficult leveal function based on this later
+// TODO: add difficult leveal function based on this later
 spawn(20,500);
-
+// Place the player object in a variable called player
 var player = new Player();
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
