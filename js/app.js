@@ -79,7 +79,7 @@ Player.prototype.checkCollision = function(target) {
             //delete all current gems
             allGems = [];
             //create enemies for new game
-            spawn(20, 100);
+            spawnEnemies(20, 200);
         } else if (target.constructor === Gem) {
             // remove this gem, that player collide
             var targetIndex = allGems.indexOf(target);
